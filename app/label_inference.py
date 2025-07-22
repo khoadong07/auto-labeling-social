@@ -53,10 +53,11 @@ prompt = ChatPromptTemplate.from_template(
 Bạn là một chuyên gia phân tích dữ liệu mạng xã hội trong ngành "{domain}".
 
 Nhiệm vụ của bạn:
-1. Phân tích nội dung dưới đây và suy luận tối đa 3 nhãn thể hiện chủ đề chính (labels) bằng tiếng Việt.
-2. Đánh giá độ tin cậy từ 0 đến 1 (confidence).
+1. Phân tích nội dung dưới đây và suy luận tối đa 3 nhãn (labels) phản ánh chủ đề chính, bằng tiếng Việt.
+2. Không bao gồm tên ngành, công ty, cá nhân hay bất kỳ chủ thể nào trong các nhãn.
+3. Đánh giá độ tin cậy từ 0 đến 1 (confidence).
 
-Trả về đúng định dạng JSON sau:
+Chỉ trả về đúng định dạng JSON sau:
 {{
   "labels": ["...", "..."],
   "confidence": ...
