@@ -7,6 +7,7 @@ from langfuse import Langfuse
 from langfuse.langchain import CallbackHandler
 from summa.summarizer import summarize
 from dotenv import load_dotenv
+from langchain_core.exceptions import OutputParserException
 
 load_dotenv()
 
@@ -78,17 +79,21 @@ label_chain = (
 
 # === Hàm gán nhãn chính ===
 def label_social_post(text: str, domain: str) -> dict:
-    """
-    Gán nhãn cho bài viết social listening theo ngành.
+    try:
+        return label_chain.invoke(
+            {
+                "text": text,
+                "domain": domain,
+            },
+            config={"callbacks": [langfuse_handler]},
+        )
+    except OutputParserException as e:
+        print("⚠️ LLM trả về sai định dạng JSON:", e)
+    except Exception as e:
+        print("❌ Lỗi không xác định:", e)
 
-    Args:
-        text (str): Nội dung bài viết.
-        domain (str): Ngành (banking, healthcare, ecommerce,...)
-
-    Returns:
-        dict: labels, confidence
-    """
-    return label_chain.invoke({
-        "text": text,
-        "domain": domain,
-    }, config={"callbacks": [langfuse_handler]})
+    # fallback mặc định
+    return {
+        "labels": [],
+        "confidence": 0.0
+    }
