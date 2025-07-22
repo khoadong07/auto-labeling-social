@@ -77,8 +77,21 @@ label_chain = (
     | parser
 )
 
-# === Hàm gán nhãn chính ===
 def label_social_post(text: str, domain: str) -> dict:
+    text_lower = text.lower()
+
+    if any(keyword in text_lower for keyword in ["minigame", "mini game", "mini-game"]):
+        return {
+            "labels": ["Minigame"],
+            "confidence": 1.0
+        }
+
+    if any(keyword in text_lower for keyword in ["tuyển dụng", "tuyển nhân sự", "tuyển ctv"]):
+        return {
+            "labels": ["Tuyển dụng"],
+            "confidence": 1.0
+        }
+
     try:
         return label_chain.invoke(
             {
@@ -92,7 +105,6 @@ def label_social_post(text: str, domain: str) -> dict:
     except Exception as e:
         print("❌ Lỗi không xác định:", e)
 
-    # fallback mặc định
     return {
         "labels": [],
         "confidence": 0.0
