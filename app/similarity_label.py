@@ -2,10 +2,14 @@ from pinecone import Pinecone, ServerlessSpec
 from sentence_transformers import SentenceTransformer
 import numpy as np
 import pandas as pd
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+PINECONE = os.getenv("PINECONE")
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-pc = Pinecone(api_key="pcsk_fBnUg_EQpxkLYKbFdQtu7ScZ8mvV4b5bz92Mq7QkksVhcw73dJxDmqFihkSdEuHZhFGiS")
+pc = Pinecone(api_key=PINECONE)
 index_name = "semantic-search-vietnamese"
 
 index = pc.Index(index_name)
