@@ -18,6 +18,19 @@ def search_label(query, top_k=3):
     return [(match["metadata"]["label"]) for match in results["matches"]]
 
 def get_best_label_from_content(content, labels, top_k=3):
+    priority_labels = {
+        'tuyển dụng': 'Tuyển dụng',
+        'livestream': 'Livestream',
+        'minigame': 'Minigame'
+    }
+
+    for label in labels:
+        print(label)
+        if label.lower() in priority_labels:
+            print("đây")
+            print([priority_labels[label.lower()]])
+            return [priority_labels[label.lower()]]
+
     for label in labels:
         if label in content:
             result = search_label(label, top_k=top_k)

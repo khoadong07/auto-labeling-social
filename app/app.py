@@ -27,11 +27,10 @@ def parallel_labeling(dedup_df: pd.DataFrame, domain: str) -> Tuple[Dict[str, st
         text = row['merged_text']
         result = label_social_post(text=text, domain=domain)
         labels = result.get("labels", [])
-
         if not labels:
             return row['text_signature'], "", []
         
-        best_label = get_best_label_from_content(text, ", ".join(labels))
+        best_label = get_best_label_from_content(text, labels)
         return row['text_signature'], best_label, labels
 
     st.info("🔄 Running parallel labeling on unique posts...")
