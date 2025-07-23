@@ -1,3 +1,4 @@
+from similarity_label import get_best_label_from_content
 import streamlit as st
 import pandas as pd
 import hashlib
@@ -8,6 +9,7 @@ from label_inference import label_social_post
 from stqdm import stqdm
 
 # ========================== Utilities ==========================
+
 
 def get_text_signature(row) -> str:
     combined_text = f"{row['Title']} {row['Content']} {row['Description']}".strip().lower()
@@ -24,6 +26,10 @@ def parallel_labeling(dedup_df: pd.DataFrame, domain: str) -> Dict[str, str]:
         text = row['merged_text']
         result = label_social_post(text=text, domain=domain)
         labels = ", ".join(result.get("labels", []))
+
+        if not labels:
+            return row['text_signature'], []
+        labels = get_best_label_from_content(text, labels)
         return row['text_signature'], labels
 
     st.info("🔄 Running parallel labeling on unique posts...")

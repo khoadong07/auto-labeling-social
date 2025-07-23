@@ -92,6 +92,12 @@ def label_social_post(text: str, domain: str) -> dict:
             "labels": ["Tuyển dụng"],
             "confidence": 1.0
         }
+    
+    if any(keyword in text_lower for keyword in ["livestream", "live stream"]):
+        return {
+            "labels": ["Livestream"],
+            "confidence": 1.0
+        }
 
     try:
         return label_chain.invoke(
