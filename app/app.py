@@ -2,7 +2,7 @@ from similarity_label import get_best_label_from_content
 import streamlit as st
 import pandas as pd
 import hashlib
-from typing import Dict
+from typing import Dict, List, Tuple
 from io import BytesIO
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from label_inference import label_social_post
@@ -19,27 +19,31 @@ def merge_text(row) -> str:
     parts = [str(row.get(col, "")).strip() for col in ['Title', 'Content', 'Description']]
     return " ".join(part for part in parts if part)
 
-def parallel_labeling(dedup_df: pd.DataFrame, domain: str) -> Dict[str, str]:
-    label_map = {}
+def parallel_labeling(dedup_df: pd.DataFrame, domain: str) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
+    label_mapping = {}   # text_signature -> best label
+    all_labels = {}      # text_signature -> full list of labels
 
     def worker(row):
         text = row['merged_text']
         result = label_social_post(text=text, domain=domain)
-        labels = ", ".join(result.get("labels", []))
+        labels = result.get("labels", [])
 
         if not labels:
-            return row['text_signature'], []
-        labels = get_best_label_from_content(text, labels)
-        return row['text_signature'], labels
+            return row['text_signature'], "", []
+        
+        best_label = get_best_label_from_content(text, ", ".join(labels))
+        return row['text_signature'], best_label, labels
 
     st.info("🔄 Running parallel labeling on unique posts...")
     with ThreadPoolExecutor(max_workers=8) as executor:
         futures = {executor.submit(worker, row): row for _, row in dedup_df.iterrows()}
         for future in stqdm(as_completed(futures), total=len(futures)):
-            signature, labels = future.result()
-            label_map[signature] = labels
+            signature, best_label, full_labels = future.result()
+            label_mapping[signature] = best_label
+            all_labels[signature] = full_labels
 
-    return label_map
+    return label_mapping, all_labels
+
 
 def process_file(df: pd.DataFrame, domain: str) -> pd.DataFrame:
     df[['Title', 'Content', 'Description']] = df[['Title', 'Content', 'Description']].fillna("")
@@ -47,10 +51,13 @@ def process_file(df: pd.DataFrame, domain: str) -> pd.DataFrame:
     df['merged_text'] = df.apply(merge_text, axis=1)
 
     dedup_df = df.drop_duplicates(subset=['text_signature'])
-    label_map = parallel_labeling(dedup_df, domain)
+    label_mapping, all_labels = parallel_labeling(dedup_df, domain)
 
-    df['Labels'] = df['text_signature'].map(label_map)
+    df['Labels_Mapping'] = df['text_signature'].map(label_mapping)
+    df['Labels'] = df['text_signature'].map(all_labels).apply(lambda x: ", ".join(x) if isinstance(x, list) else "")
+
     return df.drop(columns=["merged_text", "text_signature"])
+
 
 # ========================== Streamlit UI ==========================
 
@@ -97,7 +104,8 @@ with col2:
         processed_df = st.session_state["processed_df"]
 
         with st.expander("🔍 Preview Labeled Data", expanded=True):
-            st.dataframe(processed_df[['Title', 'Content', 'Description', 'Labels']], use_container_width=True, height=400)
+            st.dataframe(processed_df[['Title', 'Content', 'Description', 'Labels', 'Labels_Mapping']], 
+                         use_container_width=True, height=400)
 
         # Optional: Display label statistics
         with st.expander("📈 Label Distribution"):

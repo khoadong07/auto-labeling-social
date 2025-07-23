@@ -7,11 +7,9 @@ import os
 
 load_dotenv()
 PINECONE = os.getenv("PINECONE")
-model = SentenceTransformer("all-MiniLM-L6-v2")
-
 pc = Pinecone(api_key=PINECONE)
-index_name = "semantic-search-vietnamese"
-
+index_name = "semantic-label-search"
+model = SentenceTransformer('VoVanPhuc/sup-SimCSE-VietNamese-phobert-base')
 index = pc.Index(index_name)
 
 def search_label(query, top_k=3):
