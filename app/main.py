@@ -50,7 +50,7 @@ def merge_text(title: str, content: str, description: str) -> str:
 
 # ====================== API Endpoint ======================
 
-@app.post("/label", response_model=LabelResponse)
+@app.post("/api/label-inference", response_model=LabelResponse)
 def label_posts(request: LabelRequest):
     start_time = time.time()
     category = request.category
