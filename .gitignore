@@ -1,2 +1,7 @@
 venv/
 app/.env
+.idea
+.DS_Store
+app/DS_Store
+*.pyc
+*label_inference.cpython-311.pyc

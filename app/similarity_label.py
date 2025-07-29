@@ -9,7 +9,7 @@ load_dotenv()
 
 API_KEY = os.getenv("PINECONE")
 pc = Pinecone(api_key=API_KEY)
-index_name = "semantic-label-search"
+index_name = "semantic-label"
 index = pc.Index(index_name)
 
 model_name = "AITeamVN/Vietnamese_Embedding"
@@ -17,20 +17,38 @@ tokenizer  = AutoTokenizer.from_pretrained(model_name)
 model      = AutoModel.from_pretrained(model_name)
 
 def get_embedding(text: str) -> list[float]:
-    """Sinh embedding rồi L2‑normalize, trả về list float."""
     inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
     with torch.no_grad():
-        out = model(**inputs).last_hidden_state.mean(dim=1).squeeze()
-    out = F.normalize(out, p=2, dim=0)
-    return out.cpu().tolist()
+        output = model(**inputs).last_hidden_state.mean(dim=1).squeeze()
+    return F.normalize(output, p=2, dim=0).cpu().tolist()
 
-def search_label_pinecone(query: str, top_k: int = 3) -> list[str]:
-    vec  = get_embedding(query)
-    resp = index.query(vector=vec, top_k=top_k, include_metadata=True)
-    return [m["metadata"]["label"] for m in resp["matches"]]
+def semantic_label_search(query_text: str, category: str, top_k: int = 5):
+    query_vec = get_embedding(query_text)
+
+    # Truy vấn Pinecone với bộ lọc category
+    response = index.query(
+        vector=query_vec,
+        top_k=top_k,
+        filter={"category": category},
+        include_metadata=True
+    )
+
+    # Format lại kết quả
+    results = []
+    for match in response.get('matches', []):
+        metadata = match.get('metadata', {})
+        results.append(metadata.get("label"))
+
+    return results
+
+# def search_label_pinecone(query: str, top_k: int = 3) -> list[str]:
+#     vec  = get_embedding(query)
+#     resp = index.query(vector=vec, top_k=top_k, include_metadata=True)
+#     return [m["metadata"]["label"] for m in resp["matches"]]
 
 def get_best_label_from_content(
     content: str,
+    category: str,
     labels_input: list[str],
     top_k: int = 3
 ) -> list[str]:
@@ -38,7 +56,8 @@ def get_best_label_from_content(
     priority_map = {
         'tuyển dụng': 'Tuyển dụng',
         'livestream': 'Livestream',
-        'minigame': 'Minigame'
+        'minigame': 'Minigame',
+        'chứng khoán': 'Chứng khoán'
     }
     for lab in labels_input:
         if lab.lower() in priority_map:
@@ -46,12 +65,12 @@ def get_best_label_from_content(
 
     for lab in labels_input:
         if lab in content:
-            res = search_label_pinecone(lab, top_k)
+            res = semantic_label_search(query_text=lab, category=category, top_k = top_k)
             if res:
                 return res
 
     for lab in labels_input:
-        res = search_label_pinecone(lab, top_k)
+        res = semantic_label_search(query_text=lab, category=category, top_k = top_k)
         if res:
             return res
 

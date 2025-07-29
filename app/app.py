@@ -9,7 +9,18 @@ from label_inference import label_social_post
 from stqdm import stqdm
 
 # ========================== Utilities ==========================
-
+CATEGORIES = [
+    'FMCG', 'Retail', 'Education Services', 'Banking',
+    'Digital Payments', 'Insurance', 'Financial Services',
+    'Investment Services', 'Real Estate Development', 'Healthcare',
+    'Energy & Utilities', 'Software & IT Services',
+    'Ride-Hailing & Delivery', 'Logistics & Delivery',
+    'Telecommunications & Internet', 'Electronic Products',
+    'Food & Beverage', 'Home & Living', 'Hospitality & Leisure',
+    'Conglomerates', 'Beauty & Personal Care', 'Automotive',
+    'Entertainment & Media', 'Industrial Parks & Zones',
+    'Mobile Applications', 'E-commerce'
+]
 
 def get_text_signature(row) -> str:
     combined_text = f"{row['Title']} {row['Content']} {row['Description']}".strip().lower()
@@ -19,18 +30,21 @@ def merge_text(row) -> str:
     parts = [str(row.get(col, "")).strip() for col in ['Title', 'Content', 'Description']]
     return " ".join(part for part in parts if part)
 
-def parallel_labeling(dedup_df: pd.DataFrame, domain: str) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
-    label_mapping = {}   # text_signature -> best label
+def parallel_labeling(dedup_df: pd.DataFrame, category: str) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
+    label_mapping = {}   
+    
     all_labels = {}      # text_signature -> full list of labels
 
     def worker(row):
         text = row['merged_text']
-        result = label_social_post(text=text, domain=domain)
+        type = row['Type']
+        site_name = row['SiteName']
+        result = label_social_post(text=text, category=category, type=type, site_name=site_name)
         labels = result.get("labels", [])
         if not labels:
             return row['text_signature'], "", []
         
-        best_label = get_best_label_from_content(text, labels)
+        best_label = get_best_label_from_content(text, category=category, labels_input=labels)
         return row['text_signature'], best_label, labels
 
     st.info("🔄 Running parallel labeling on unique posts...")
@@ -44,13 +58,13 @@ def parallel_labeling(dedup_df: pd.DataFrame, domain: str) -> Tuple[Dict[str, st
     return label_mapping, all_labels
 
 
-def process_file(df: pd.DataFrame, domain: str) -> pd.DataFrame:
+def process_file(df: pd.DataFrame, category: str) -> pd.DataFrame:
     df[['Title', 'Content', 'Description']] = df[['Title', 'Content', 'Description']].fillna("")
     df['text_signature'] = df.apply(get_text_signature, axis=1)
     df['merged_text'] = df.apply(merge_text, axis=1)
 
     dedup_df = df.drop_duplicates(subset=['text_signature'])
-    label_mapping, all_labels = parallel_labeling(dedup_df, domain)
+    label_mapping, all_labels = parallel_labeling(dedup_df, category)
 
     df['Labels_Mapping'] = df['text_signature'].map(label_mapping)
     df['Labels'] = df['text_signature'].map(all_labels).apply(lambda x: ", ".join(x) if isinstance(x, list) else "")
@@ -73,7 +87,7 @@ col1, col2 = st.columns([1, 2])
 with col1:
     st.header("🔧 Input Settings")
 
-    domain = st.text_input("📌 Domain (e.g., banking, healthcare, ecommerce)", "")
+    category = st.selectbox("📌 Chọn ngành (Category):", options=CATEGORIES)
 
     uploaded_file = st.file_uploader("📁 Upload Excel (.xlsx)", type=["xlsx"])
 
@@ -87,11 +101,11 @@ with col1:
             max_rows = len(df)
             num_rows = st.slider("🔢 Number of rows to process", min_value=1, max_value=max_rows, value=min(100, max_rows))
 
-            if domain and st.button("🚀 Start Labeling"):
+            if category and st.button("🚀 Start Labeling"):
                 df_subset = df.head(num_rows)
 
                 with st.spinner("⚙️ Processing... please wait."):
-                    processed_df = process_file(df_subset, domain)
+                    processed_df = process_file(df_subset, category)
 
                 st.session_state["processed_df"] = processed_df
                 st.success("✅ Labeling complete!")
@@ -103,7 +117,7 @@ with col2:
         processed_df = st.session_state["processed_df"]
 
         with st.expander("🔍 Preview Labeled Data", expanded=True):
-            st.dataframe(processed_df[['Title', 'Content', 'Description', 'Labels', 'Labels_Mapping']], 
+            st.dataframe(processed_df[['Title', 'Content', 'Description', 'Type', 'SiteName', 'Labels', 'Labels_Mapping']], 
                          use_container_width=True, height=400)
 
         # Optional: Display label statistics

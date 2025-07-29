@@ -78,32 +78,38 @@ label_chain = (
     | parser
 )
 
-def label_social_post(text: str, domain: str) -> dict:
+def label_social_post(text: str, category: str, type: str, site_name: str) -> dict:
     text_lower = text.lower()
 
-    if any(keyword in text_lower for keyword in ["minigame", "mini game", "mini-game"]):
-        return {
-            "labels": ["Minigame"],
-            "confidence": 1.0
-        }
+    if type != 'newsTopic':
+        if any(keyword in text_lower for keyword in ["minigame", "mini game", "mini-game"]):
+            return {
+                "labels": ["Minigame"],
+                "confidence": 1.0
+            }
 
-    if any(keyword in text_lower for keyword in ["tuyển dụng", "tuyển nhân sự", "tuyển ctv"]):
-        return {
-            "labels": ["Tuyển dụng"],
-            "confidence": 1.0
-        }
-    
-    if any(keyword in text_lower for keyword in ["livestream", "live stream"]):
-        return {
-            "labels": ["Livestream"],
-            "confidence": 1.0
-        }
-
+        if any(keyword in text_lower for keyword in ["tuyển dụng", "tuyển nhân sự", "tuyển ctv"]):
+            return {
+                "labels": ["Tuyển dụng"],
+                "confidence": 1.0
+            }
+        
+        if any(keyword in text_lower for keyword in ["livestream", "live stream"]):
+            return {
+                "labels": ["Livestream"],
+                "confidence": 1.0
+            }
+    if site_name == 'fireant.vn':
+        if any(keyword in text_lower for keyword in ["chứng khoán", "index", "in-dex", "vn30", "vnindex"]):
+            return {
+                "labels": ["Chứng khoán"],
+                "confidence": 1.0
+            }
     try:
         return label_chain.invoke(
             {
                 "text": text,
-                "domain": domain,
+                "domain": category,
             },
             config={"callbacks": [langfuse_handler]},
         )
