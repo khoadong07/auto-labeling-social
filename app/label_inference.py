@@ -1,13 +1,14 @@
 import os
 import re
+
+from dotenv import load_dotenv
+from langchain_core.exceptions import OutputParserException
+from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
-from langchain_core.output_parsers import JsonOutputParser
 from langfuse import Langfuse
 from langfuse.langchain import CallbackHandler
 from summa.summarizer import summarize
-from dotenv import load_dotenv
-from langchain_core.exceptions import OutputParserException
 
 load_dotenv()
 
@@ -28,12 +29,14 @@ def summarize_text_locally(text: str, word_limit: int = 50) -> str:
         summary = '. '.join(text.split('. ')[:2])
     return summary
 
+
 # === Chuẩn hóa nội dung đầu vào: cắt 100 từ hoặc tóm tắt nếu dài ===
 def prepare_text(text: str) -> str:
     words = re.findall(r'\w+|\S', text)
     if len(words) > 100:
         return summarize_text_locally(text)
     return ' '.join(words[:100])
+
 
 # === LLM từ DeepInfra ===
 llm = ChatOpenAI(
@@ -68,14 +71,15 @@ Nội dung: "{text}"
 
 # === Gộp thành một Agentic Chain chuẩn hóa ===
 label_chain = (
-    {
-        "text": lambda x: prepare_text(x["text"]),
-        "domain": lambda x: x["domain"],
-    }
-    | prompt
-    | llm
-    | parser
+        {
+            "text": lambda x: prepare_text(x["text"]),
+            "domain": lambda x: x["domain"],
+        }
+        | prompt
+        | llm
+        | parser
 )
+
 
 def label_social_post(text: str, category: str, type: str, site_name: str) -> dict:
     text_lower = text.lower()
@@ -92,25 +96,26 @@ def label_social_post(text: str, category: str, type: str, site_name: str) -> di
                 "labels": ["Tuyển dụng"],
                 "confidence": 1.0
             }
-        
+
         if any(keyword in text_lower for keyword in ["livestream", "live stream"]):
             return {
                 "labels": ["Livestream"],
                 "confidence": 1.0
             }
-        
+
     if category in ['FMCG', 'Retail', 'Banking', 'Digital Payments', 'Insurance',
-       'Investment Services', 'Real Estate Development',
-       'Energy & Utilities', 'Software & IT Services',
-       'Telecommunications & Internet', 'Electronic Products',
-       'Food & Beverage', 'Home & Living', 'Hospitality & Leisure',
-       'Conglomerates', 'Automotive']:
-        
-        if site_name == 'fireant.vn' or any(keyword in text_lower for keyword in ["chứng khoán", "index", "in-dex", "vn30", "vnindex"]):
+                    'Investment Services', 'Real Estate Development',
+                    'Energy & Utilities', 'Software & IT Services',
+                    'Telecommunications & Internet', 'Electronic Products',
+                    'Food & Beverage', 'Home & Living', 'Hospitality & Leisure',
+                    'Conglomerates', 'Automotive']:
+
+        if site_name == 'fireant.vn' or any(
+                keyword in text_lower for keyword in ["chứng khoán", "index", "in-dex", "vn30", "vnindex"]):
             return {
-                    "labels": ["Chứng khoán"],
-                    "confidence": 1.0
-                }
+                "labels": ["Chứng khoán"],
+                "confidence": 1.0
+            }
     try:
         return label_chain.invoke(
             {
@@ -121,6 +126,7 @@ def label_social_post(text: str, category: str, type: str, site_name: str) -> di
         )
     except OutputParserException as e:
         print("⚠️ LLM trả về sai định dạng JSON:", e)
+        return {"labels": ["Đề cập chung"], "confidence": 1.0}
     except Exception as e:
         print("❌ Lỗi không xác định:", e)
 

@@ -57,7 +57,8 @@ def get_best_label_from_content(
         'tuyển dụng': 'Tuyển dụng',
         'livestream': 'Livestream',
         'minigame': 'Minigame',
-        'chứng khoán': 'Chứng khoán'
+        'chứng khoán': 'Chứng khoán',
+        'đề cập chung': 'Đề cập chung'
     }
     for lab in labels_input:
         if lab.lower() in priority_map:
