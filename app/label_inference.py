@@ -119,7 +119,7 @@ def label_social_post(text: str, category: str, type: str, site_name: str, topic
                 "confidence": 1.0
             }
     try:
-        return label_chain.invoke(
+        label_inf = label_chain.invoke(
             {
                 "text": text,
                 "domain": category,
@@ -127,6 +127,12 @@ def label_social_post(text: str, category: str, type: str, site_name: str, topic
             },
             config={"callbacks": [langfuse_handler]},
         )
+        if label_inf is not None:
+            label = label_inf.get("labels")
+            if len(label) > 0:
+                return label_inf
+            else:
+                return {"labels": ["Đề cập chung"], "confidence": 1.0}
     except OutputParserException as e:
         print("⚠️ LLM trả về sai định dạng JSON:", e)
         return {"labels": ["Đề cập chung"], "confidence": 1.0}

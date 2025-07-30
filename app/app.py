@@ -26,6 +26,20 @@ def get_text_signature(row) -> str:
     combined_text = f"{row['Title']} {row['Content']} {row['Description']}".strip().lower()
     return hashlib.md5(combined_text.encode('utf-8')).hexdigest()
 
+def ensure_list_or_none(value):
+    if isinstance(value, list):
+        return value
+    elif pd.isna(value):
+        return None
+    elif isinstance(value, str):
+        try:
+            val = ast.literal_eval(value)
+            if isinstance(val, list):
+                return val
+        except:
+            pass
+    return None
+
 def merge_text(row) -> str:
     parts = [str(row.get(col, "")).strip() for col in ['Title', 'Content', 'Description']]
     return " ".join(part for part in parts if part)
@@ -67,7 +81,7 @@ def process_file(df: pd.DataFrame, category: str) -> pd.DataFrame:
     dedup_df = df.drop_duplicates(subset=['text_signature'])
     label_mapping, all_labels = parallel_labeling(dedup_df, category)
 
-    df['Labels_Mapping'] = df['text_signature'].map(label_mapping)
+    df['Labels_Mapping'] = df['text_signature'].map(label_mapping).apply(ensure_list_or_none)
     df['Labels'] = df['text_signature'].map(all_labels).apply(lambda x: ", ".join(x) if isinstance(x, list) else "")
 
     return df.drop(columns=["merged_text", "text_signature"])

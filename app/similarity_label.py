@@ -66,7 +66,7 @@ def semantic_label_search_array(query_texts: list[str], category: str):
             top_labels.append(label)
         else:
             print(f"[LOG] Query: '{query_text}' => No match found.")
-            top_labels.append(None)
+            pass
 
     return top_labels
 # def search_label_pinecone(query: str, top_k: int = 3) -> list[str]:
