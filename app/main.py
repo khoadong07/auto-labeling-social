@@ -198,7 +198,8 @@ def label_posts(request: LabelRequest):
         text = row["merged_text"]
         post_type = row["type"]
         site_name = row["site_name"]
-        result = label_social_post(text=text, category=category, type=post_type, site_name=site_name)
+        topic_name = row["topic_name"]
+        result = label_social_post(text=text, category=category, type=post_type, site_name=site_name, topic_name=topic_name)
         labels = result.get("labels", [])
         best_label = get_best_label_from_content(text, category=category, labels_input=labels) if labels else ""
         label_mapping[row["text_signature"]] = best_label

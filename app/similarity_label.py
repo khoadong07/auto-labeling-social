@@ -41,6 +41,34 @@ def semantic_label_search(query_text: str, category: str, top_k: int = 5):
 
     return results
 
+def semantic_label_search_array(query_texts: list[str], category: str):
+    top_labels = []
+
+    for query_text in query_texts:
+        query_vec = get_embedding(query_text)
+
+        response = index.query(
+            vector=query_vec,
+            top_k=1,
+            filter={"category": category},
+            include_metadata=True
+        )
+
+        matches = response.get('matches', [])
+        if matches:
+            match = matches[0]
+            metadata = match.get('metadata', {})
+            label = metadata.get("label")
+            score = match.get("score")
+
+            print(f"[LOG] Query: '{query_text}' => Top Label: '{label}' (Score: {score:.4f})")
+
+            top_labels.append(label)
+        else:
+            print(f"[LOG] Query: '{query_text}' => No match found.")
+            top_labels.append(None)
+
+    return top_labels
 # def search_label_pinecone(query: str, top_k: int = 3) -> list[str]:
 #     vec  = get_embedding(query)
 #     resp = index.query(vector=vec, top_k=top_k, include_metadata=True)
@@ -53,26 +81,25 @@ def get_best_label_from_content(
     top_k: int = 3
 ) -> list[str]:
 
-    priority_map = {
-        'tuyển dụng': 'Tuyển dụng',
-        'livestream': 'Livestream',
-        'minigame': 'Minigame',
-        'chứng khoán': 'Chứng khoán',
-        'đề cập chung': 'Đề cập chung'
-    }
-    for lab in labels_input:
-        if lab.lower() in priority_map:
-            return [priority_map[lab.lower()]]
+    # priority_map = {
+    #     'tuyển dụng': 'Tuyển dụng',
+    #     'livestream': 'Livestream',
+    #     'minigame': 'Minigame',
+    #     'chứng khoán': 'Chứng khoán',
+    #     'đề cập chung': 'Đề cập chung'
+    # }
+    # for lab in labels_input:
+    #     if lab.lower() in priority_map:
+    #         return [priority_map[lab.lower()]]
 
-    for lab in labels_input:
-        if lab in content:
-            res = semantic_label_search(query_text=lab, category=category, top_k = top_k)
-            if res:
-                return res
+    # for lab in labels_input:
+    #     if lab in content:
+    #         res = semantic_label_search(query_text=lab, category=category, top_k = top_k)
+    #         if res:
+    #             return res
 
-    for lab in labels_input:
-        res = semantic_label_search(query_text=lab, category=category, top_k = top_k)
-        if res:
-            return res
+    res = semantic_label_search_array(query_texts=labels_input, category=category)
+    if res:
+        return res
 
     return []

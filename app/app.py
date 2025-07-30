@@ -39,7 +39,7 @@ def parallel_labeling(dedup_df: pd.DataFrame, category: str) -> Tuple[Dict[str, 
         text = row['merged_text']
         type = row['Type']
         site_name = row['SiteName']
-        result = label_social_post(text=text, category=category, type=type, site_name=site_name)
+        result = label_social_post(text=text, category=category, type=type, site_name=site_name, topic_name=row['TopicName'])
         labels = result.get("labels", [])
         if not labels:
             return row['text_signature'], "", []

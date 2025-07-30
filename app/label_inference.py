@@ -57,7 +57,8 @@ Bạn là một chuyên gia phân tích dữ liệu mạng xã hội trong ngàn
 Nhiệm vụ của bạn:
 1. Phân tích nội dung dưới đây và suy luận tối đa 3 nhãn (labels) phản ánh chủ đề chính, bằng tiếng Việt.
 2. Không bao gồm tên ngành, công ty, cá nhân hay bất kỳ chủ thể nào trong các nhãn.
-3. Đánh giá độ tin cậy từ 0 đến 1 (confidence).
+3. Chỉ trả label liên quan đến "{topic_name}" có đề cập trong bài.
+4. Đánh giá độ tin cậy từ 0 đến 1 (confidence).
 
 Chỉ trả về đúng định dạng JSON sau:
 {{
@@ -74,6 +75,7 @@ label_chain = (
         {
             "text": lambda x: prepare_text(x["text"]),
             "domain": lambda x: x["domain"],
+            "topic_name": lambda x: x["topic_name"],
         }
         | prompt
         | llm
@@ -81,7 +83,7 @@ label_chain = (
 )
 
 
-def label_social_post(text: str, category: str, type: str, site_name: str) -> dict:
+def label_social_post(text: str, category: str, type: str, site_name: str, topic_name: str) -> dict:
     text_lower = text.lower()
 
     if type != 'newsTopic':
@@ -121,6 +123,7 @@ def label_social_post(text: str, category: str, type: str, site_name: str) -> di
             {
                 "text": text,
                 "domain": category,
+                "topic_name": topic_name
             },
             config={"callbacks": [langfuse_handler]},
         )
