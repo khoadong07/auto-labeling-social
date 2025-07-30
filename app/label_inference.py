@@ -32,7 +32,6 @@ def summarize_text_locally(text: str, word_limit: int = 50) -> str:
 def prepare_text(text: str) -> str:
     words = re.findall(r'\w+|\S', text)
     if len(words) > 100:
-        print("📌 Nội dung dài > 100 từ, đang tóm tắt bằng TextRank...")
         return summarize_text_locally(text)
     return ' '.join(words[:100])
 
@@ -99,12 +98,19 @@ def label_social_post(text: str, category: str, type: str, site_name: str) -> di
                 "labels": ["Livestream"],
                 "confidence": 1.0
             }
-    if site_name == 'fireant.vn':
-        if any(keyword in text_lower for keyword in ["chứng khoán", "index", "in-dex", "vn30", "vnindex"]):
+        
+    if category in ['FMCG', 'Retail', 'Banking', 'Digital Payments', 'Insurance',
+       'Investment Services', 'Real Estate Development',
+       'Energy & Utilities', 'Software & IT Services',
+       'Telecommunications & Internet', 'Electronic Products',
+       'Food & Beverage', 'Home & Living', 'Hospitality & Leisure',
+       'Conglomerates', 'Automotive']:
+        
+        if site_name == 'fireant.vn' or any(keyword in text_lower for keyword in ["chứng khoán", "index", "in-dex", "vn30", "vnindex"]):
             return {
-                "labels": ["Chứng khoán"],
-                "confidence": 1.0
-            }
+                    "labels": ["Chứng khoán"],
+                    "confidence": 1.0
+                }
     try:
         return label_chain.invoke(
             {

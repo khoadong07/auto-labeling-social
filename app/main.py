@@ -15,8 +15,8 @@ class InputItem(BaseModel):
     topic_name: str
     type: str
     topic_id: str
-    siteId: str
-    siteName: str
+    site_id: str
+    site_name: str
     description: str
     title: str
     content: str
@@ -28,7 +28,7 @@ class LabelRequest(BaseModel):
 class LabelResult(BaseModel):
     id: str
     topic_id: str
-    siteId: str
+    site_id: str
     type: str
     label: str
     label_id: str = None
@@ -85,7 +85,7 @@ def label_posts(request: LabelRequest):
     for _, row in dedup_df.iterrows():
         text = row["merged_text"]
         post_type = row["type"]
-        site_name = row["siteName"]
+        site_name = row["site_name"]
         result = label_social_post(text=text, category=category, type=post_type, site_name=site_name)
         labels = result.get("labels", [])
         best_label = get_best_label_from_content(text, category=category, labels_input=labels) if labels else ""
@@ -103,7 +103,7 @@ def label_posts(request: LabelRequest):
         results.append(LabelResult(
             id=row["id"],
             topic_id=row["topic_id"],
-            siteId=row["siteId"],
+            site_id=row["site_id"],
             type=row["type"],
             ref_label_map=best_label,
             label=best_label[0] if best_label else None,
