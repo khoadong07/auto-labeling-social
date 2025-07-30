@@ -39,7 +39,8 @@ def parallel_labeling(dedup_df: pd.DataFrame, category: str) -> Tuple[Dict[str, 
         text = row['merged_text']
         type = row['Type']
         site_name = row['SiteName']
-        result = label_social_post(text=text, category=category, type=type, site_name=site_name, topic_name=row['TopicName'])
+        topic_name = row['Topic']
+        result = label_social_post(text=text, category=category, type=type, site_name=site_name, topic_name=topic_name)
         labels = result.get("labels", [])
         if not labels:
             return row['text_signature'], "", []
@@ -117,7 +118,7 @@ with col2:
         processed_df = st.session_state["processed_df"]
 
         with st.expander("🔍 Preview Labeled Data", expanded=True):
-            st.dataframe(processed_df[['Title', 'Content', 'Description', 'Type', 'SiteName', 'Labels', 'Labels_Mapping']], 
+            st.dataframe(processed_df[['Title', 'Content', 'Description', 'Type', 'SiteName', 'Topic', 'Labels', 'Labels_Mapping']], 
                          use_container_width=True, height=400)
 
         # Optional: Display label statistics
