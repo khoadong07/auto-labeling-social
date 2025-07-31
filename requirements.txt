@@ -108,3 +108,4 @@ zstandard==0.23.0
 fastapi
 uvicorn
 gunicorn
+vncorenlp

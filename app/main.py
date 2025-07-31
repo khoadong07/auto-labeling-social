@@ -6,6 +6,12 @@ from similarity_label import get_best_label_from_content
 import hashlib
 import pandas as pd
 import time
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
+from vncorenlp import VnCoreNLP
+import torch
+
 
 app = FastAPI(title="Social Listening Labeling API")
 

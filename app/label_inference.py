@@ -10,6 +10,8 @@ from langfuse import Langfuse
 from langfuse.langchain import CallbackHandler
 from summa.summarizer import summarize
 
+from ads_predict import predict_ads
+
 load_dotenv()
 
 # === Langfuse tracking ===
@@ -58,7 +60,8 @@ Nhiệm vụ của bạn:
 1. Phân tích nội dung dưới đây và suy luận tối đa 3 nhãn (labels) phản ánh chủ đề chính, bằng tiếng Việt.
 2. Không bao gồm tên ngành, công ty, cá nhân hay bất kỳ chủ thể nào trong các nhãn.
 3. Chỉ trả label liên quan đến "{topic_name}" có đề cập trong bài.
-4. Đánh giá độ tin cậy từ 0 đến 1 (confidence).
+4. Loại bỏ label nếu label trùng với "{topic_name}" 
+5. Đánh giá độ tin cậy từ 0 đến 1 (confidence).
 
 Chỉ trả về đúng định dạng JSON sau:
 {{
@@ -85,7 +88,13 @@ label_chain = (
 
 def label_social_post(text: str, category: str, type: str, site_name: str, topic_name: str) -> dict:
     text_lower = text.lower()
-
+    # check ads service
+    ads_predict = predict_ads(text)
+    if ads_predict and type not in ('newsTopic', 'fbPageTopic'):
+        return {
+            "labels": ["Rao vặt"],
+            "confidence": 1.0
+        }
     if type != 'newsTopic':
         if any(keyword in text_lower for keyword in ["minigame", "mini game", "mini-game"]):
             return {
