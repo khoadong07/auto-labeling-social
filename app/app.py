@@ -59,7 +59,7 @@ def parallel_labeling(dedup_df: pd.DataFrame, category: str) -> Tuple[Dict[str, 
         if not labels:
             return row['text_signature'], "", []
         
-        best_label = get_best_label_from_content(text, category=category, labels_input=labels)
+        best_label = get_best_label_from_content(category=category, labels_input=labels)
         return row['text_signature'], best_label, labels
 
     st.info("🔄 Running parallel labeling on unique posts...")
