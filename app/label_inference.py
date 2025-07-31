@@ -52,7 +52,7 @@ llm = ChatOpenAI(
 parser = JsonOutputParser()
 
 # === Prompt tổng quát theo ngành (KHÔNG chứa nguồn) ===
-prompt = ChatPromptTemplate.from_template(prompt = """
+prompt = ChatPromptTemplate.from_template("""
 Bạn là chuyên gia phân tích dữ liệu mạng xã hội.
 
 Yêu cầu:
@@ -72,9 +72,7 @@ Chỉ trả về đúng định dạng JSON:
 }}
 
 Nội dung: "{text}"
-"""
-
-)
+""")
 
 # === Gộp thành một Agentic Chain chuẩn hóa ===
 label_chain = (
