@@ -52,19 +52,20 @@ llm = ChatOpenAI(
 parser = JsonOutputParser()
 
 # === Prompt tổng quát theo ngành (KHÔNG chứa nguồn) ===
-prompt = ChatPromptTemplate.from_template("""
-Bạn là một chuyên gia phân tích dữ liệu mạng xã hội.
+prompt = ChatPromptTemplate.from_template(prompt = """
+Bạn là chuyên gia phân tích dữ liệu mạng xã hội.
 
-Dịch "{topic_name}" sang tiếng Việt trước khi phân tích.
+Yêu cầu:
+1. Dịch "{topic_name}" sang tiếng Việt.
+2. Phân tích nội dung bên dưới và trích tối đa 3 nhãn (labels) bằng tiếng Việt, phản ánh đúng chủ đề đã dịch.
+3. Chỉ chọn nhãn thực sự liên quan đến nội dung.
+4. Loại bỏ nhãn nếu:
+   - Trùng hoặc gần nghĩa với chủ đề đã dịch;
+   - Chứa từ khóa liên quan ngành "{domain}" (bằng tiếng Việt, tiếng Anh, viết tắt hoặc viết hoa/thường);
+   - Là tên riêng (công ty, cá nhân, tổ chức, địa danh).
+5. Gán độ tin cậy (confidence) từ 0 đến 1.
 
-Nhiệm vụ của bạn:
-1. Phân tích nội dung dưới đây và suy luận tối đa 3 nhãn (labels) phản ánh chủ đề chính, bằng tiếng Việt.
-2. Không bao gồm tên ngành (dù viết tiếng Việt hay tiếng Anh), tên công ty, cá nhân hay bất kỳ chủ thể cụ thể nào trong các nhãn.
-3. Chỉ trả label liên quan đến "{topic_name}" có đề cập trong bài.
-4. Loại bỏ label nếu label trùng với "{topic_name}" đã dịch ở trên hoặc chứa từ khóa liên quan đến ngành "{domain}" (bằng cả tiếng Việt và tiếng Anh).
-5. Đánh giá độ tin cậy từ 0 đến 1 (confidence).
-
-Chỉ trả về đúng định dạng JSON sau:
+Chỉ trả về đúng định dạng JSON:
 {{
   "labels": ["...", "..."],
   "confidence": ...
@@ -72,6 +73,7 @@ Chỉ trả về đúng định dạng JSON sau:
 
 Nội dung: "{text}"
 """
+
 )
 
 # === Gộp thành một Agentic Chain chuẩn hóa ===
