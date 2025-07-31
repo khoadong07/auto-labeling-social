@@ -75,10 +75,8 @@ def semantic_label_search_array(query_texts: list[str], category: str):
 #     return [m["metadata"]["label"] for m in resp["matches"]]
 
 def get_best_label_from_content(
-    content: str,
     category: str,
     labels_input: list[str],
-    top_k: int = 3
 ) -> list[str]:
 
     # priority_map = {

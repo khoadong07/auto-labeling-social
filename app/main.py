@@ -39,7 +39,7 @@ class LabelResult(BaseModel):
     topic_id: str
     site_id: str
     type: str
-    label: str = None
+    label: str = ""
     label_id: List[str] = []
     ref_label_map: List[str] = []
     ref_llm_label: List[str] = []
@@ -207,7 +207,7 @@ def label_posts(request: LabelRequest):
         topic_name = row["topic_name"]
         result = label_social_post(text=text, category=category, type=post_type, site_name=site_name, topic_name=topic_name)
         labels = result.get("labels", [])
-        best_label = get_best_label_from_content(text, category=category, labels_input=labels) if labels else ""
+        best_label = get_best_label_from_content(labels_input=labels, category=category) if labels else ""
         label_mapping[row["text_signature"]] = best_label
         all_labels[row["text_signature"]] = labels
 
@@ -224,10 +224,10 @@ def label_posts(request: LabelRequest):
             topic_id=row["topic_id"],
             site_id=row["site_id"],
             type=row["type"],
-            ref_label_map=best_label if best_label else None,
-            label=best_label[0] if best_label else None,
-            label_id=[map_label_to_id(label) if label else None for label in best_label],
-            ref_llm_label=full_labels if full_labels else None,
+            ref_label_map=best_label if best_label else [],
+            label=best_label[0] if best_label else "",
+            label_id=[map_label_to_id(label) if label else None for label in best_label] if best_label else [],
+            ref_llm_label=full_labels if full_labels else [],
             process_time=duration
         ))
 

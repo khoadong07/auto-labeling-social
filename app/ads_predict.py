@@ -4,7 +4,7 @@ from vncorenlp import VnCoreNLP
 
 # ---------- Load once at startup ----------
 # Khởi tạo VnCoreNLP cho tách từ
-vncorenlp = VnCoreNLP("/app/vncorenlp/VnCoreNLP-1.1.1.jar", annotators="wseg", max_heap_size='-Xmx500m')
+vncorenlp = VnCoreNLP("vncorenlp/VnCoreNLP-1.1.1.jar", annotators="wseg", max_heap_size='-Xmx500m')
 
 # Load tokenizer và model từ Hugging Face
 tokenizer = AutoTokenizer.from_pretrained("Khoa/kompa-check-ads-0725", use_fast=False)
