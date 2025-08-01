@@ -41,7 +41,8 @@ def semantic_label_search(query_text: str, category: str, top_k: int = 5):
 
     return results
 
-def semantic_label_search_array(query_texts: list[str], category: str):
+
+def semantic_label_search(query_texts: list[str], category: str):
     top_labels = []
 
     for query_text in query_texts:
@@ -63,40 +64,27 @@ def semantic_label_search_array(query_texts: list[str], category: str):
 
             print(f"[LOG] Query: '{query_text}' => Top Label: '{label}' (Score: {score:.4f})")
 
-            top_labels.append(label)
+            top_labels.append({
+                "label": label,
+                "score": score
+            })
         else:
             print(f"[LOG] Query: '{query_text}' => No match found.")
-            pass
+    
+    if top_labels:
+        max_label = max(top_labels, key=lambda x: x['score'])
+        only_label = max_label['label']
+        return [only_label]
+    else:
+        return []
 
-    return top_labels
-# def search_label_pinecone(query: str, top_k: int = 3) -> list[str]:
-#     vec  = get_embedding(query)
-#     resp = index.query(vector=vec, top_k=top_k, include_metadata=True)
-#     return [m["metadata"]["label"] for m in resp["matches"]]
 
 def get_best_label_from_content(
     category: str,
     labels_input: list[str],
 ) -> list[str]:
 
-    # priority_map = {
-    #     'tuyển dụng': 'Tuyển dụng',
-    #     'livestream': 'Livestream',
-    #     'minigame': 'Minigame',
-    #     'chứng khoán': 'Chứng khoán',
-    #     'đề cập chung': 'Đề cập chung'
-    # }
-    # for lab in labels_input:
-    #     if lab.lower() in priority_map:
-    #         return [priority_map[lab.lower()]]
-
-    # for lab in labels_input:
-    #     if lab in content:
-    #         res = semantic_label_search(query_text=lab, category=category, top_k = top_k)
-    #         if res:
-    #             return res
-
-    res = semantic_label_search_array(query_texts=labels_input, category=category)
+    res = semantic_label_search(query_texts=labels_input, category=category)
     if res:
         return res
 
