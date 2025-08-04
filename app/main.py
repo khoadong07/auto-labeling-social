@@ -171,7 +171,8 @@ def map_label_to_id(label_name):
                      "Thay đổi quy định": "68898a3c16a3634d833382bd",
                      "Chính sách thương mại": "68898a3c16a3634d833382be",
                      "Chính sách môi trường": "68898a3c16a3634d833382bf",
-                     "Đề cập chung": "6889c65916a3634d833382c3"
+                     "Đề cập chung": "6889c65916a3634d833382c3",
+                     "Tài khoản": "6890104716a3634d83338415"
                      }
     return label_mapping.get(label_name, "Label không tồn tại")
 

@@ -103,7 +103,21 @@ def label_social_post(text: str, category: str, type: str, site_name: str, topic
                 "confidence": 1.0
             }
 
-        if any(keyword in text_lower for keyword in ["tuyển dụng", "tuyển nhân sự", "tuyển ctv"]):
+        if any(keyword in text_lower for keyword in [
+                "tuyển dụng", 
+                "tuyển nhân sự", 
+                "tuyển ctv", 
+                "tuyển nhân viên",
+                "tuyển tài xế",
+                "tuyển shipper",
+                "tuyển vị trí",
+                "tuyển gấp nhân viên",
+                "tuyendung",
+                "tuyendungshipper",
+                "tuyển gấp shipper",
+                "tuyển nv",
+                "tuyển gấp"
+            ]):
             return {
                 "labels": ["Tuyển dụng"],
                 "confidence": 1.0
