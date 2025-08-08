@@ -39,13 +39,12 @@ def prepare_text(text: str) -> str:
         return summarize_text_locally(text)
     return ' '.join(words[:100])
 
-
-# === LLM từ DeepInfra ===
 llm = ChatOpenAI(
-    model="accounts/fireworks/models/llama4-scout-instruct-basic",
-    temperature=0.4,
-    openai_api_key=os.getenv("OPENAI_API_KEY"),
-    openai_api_base=os.getenv("OPENAI_API_BASE"),
+    model="gpt-4o-mini",
+    max_tokens=None,
+    timeout=None,
+    max_retries=2,
+    api_key=os.getenv("OPENAI_API_KEY")
 )
 
 # === Parser JSON chuẩn ===

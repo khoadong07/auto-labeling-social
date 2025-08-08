@@ -9,7 +9,7 @@ load_dotenv()
 
 API_KEY = os.getenv("PINECONE")
 pc = Pinecone(api_key=API_KEY)
-index_name = "semantic-label"
+index_name = "semantic-label-v1"
 index = pc.Index(index_name)
 
 model_name = "AITeamVN/Vietnamese_Embedding"
