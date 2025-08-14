@@ -17,11 +17,11 @@ load_dotenv()
 # === Langfuse tracking ===
 langfuse_handler = CallbackHandler()
 
-# langfuse = Langfuse(
-#     public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
-#     secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
-#     host=os.getenv("LANGFUSE_HOST"),
-# )
+langfuse = Langfuse(
+    public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+    secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+    host=os.getenv("LANGFUSE_HOST"),
+)
 
 
 # === Hàm tóm tắt nội dung nếu dài hơn 100 từ (không dùng LLM) ===
@@ -148,7 +148,7 @@ def label_social_post(text: str, category: str, type: str, site_name: str, topic
                 "domain": category,
                 "topic_name": topic_name
             },
-            # config={"callbacks": [langfuse_handler]},
+            config={"callbacks": [langfuse_handler]},
         )
         if label_inf is not None:
             label = label_inf.get("labels")
